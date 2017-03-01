@@ -10,13 +10,16 @@
 
     <script src="source/bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js"></script>
 
+    <script src="https://api-maps.yandex.ru/2.0-stable/?load=package.standard&lang=ru-RU" type="text/javascript"></script>
+
     <link href="source/bootstrap-3.3.7/css/bootstrap.min.css" rel="stylesheet">
 
     <link href="source/bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css" rel="stylesheet">
 
     <title>Маршрут</title>
+
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU" type="text/javascript"></script>
+
 </head>
 
 <body>
@@ -38,7 +41,8 @@ if(isset($_POST['connect_db'])){
     $db_ip = $_POST["db_ip"];
     $db_login = $_POST["db_login"];
     $db_password = $_POST["db_password"];
-    $state->setConnection($db_ip, $db_login, $db_password);
+	$db_name = $_POST["db_name"];
+    $state->setConnection($db_ip, $db_login, $db_password, $db_name);
 
 } elseif (isset($_POST['disconnect_db'])){
     $state->unsetCoordinates();
@@ -76,12 +80,14 @@ echo "<br>";
             <center><h4>Подключено к БД</h4></center><hr>
             <form method="POST" action="index.php">
                 <center><h4>ip: <?=$state->getIp()?> </h4></center><hr>
+				<center><h4>db name: <?=$state->getDbName()?> </h4></center><hr>
                 <center><button type="submit" name="disconnect_db" class="btn btn-default">Отключение</button></center>
             </form>
         <?php else: ?>
             <center><h4>Подключение к БД</h4></center><hr>
             <form method="POST" action="index.php">
                 <div class="form-group"><label>ip:</label><input type="text" name="db_ip" placeholder="localhost" value="localhost" class="form-control"/></div>
+				<div class="form-group"><label>db name:</label><input type="text" name="db_name" placeholder="voyager" value="voyager" class="form-control"/></div>
                 <div class="form-group"><label>login:</label><input type="text" name="db_login" placeholder="root" value="root" class="form-control"/></div>
                 <div class="form-group"><label>password:</label><input type="password" name="db_password" placeholder="masterkey" value="masterkey" class="form-control"/></div>
 
@@ -107,7 +113,7 @@ echo "<br>";
                 if ($state->coordinatesAreSet() && ($state->getObjectId() == $object[0])){
                     echo '<option selected value="'. $object[0] .'">('. $object[0] .') '. $object[1] .'</option>';
                 } else {
-                    echo '<option value="'. $object[0] .'">('. $object[0] .') '. $object[1] .'</option>';
+                    echo '<option value="'. $object[0] .'">'. $object[0] .') '. $object[1] .'</option>';
                 }
 
             }
@@ -162,34 +168,36 @@ echo "<br>";
             
             
             <script type="text/javascript">
-	            var coordinates = '. $json_coordinates .';
-	            var x_middle = 0;
-	            var y_middle = 0;
-	            
-	            
-	            var coord_count = '.$points_count.';
-	            
-	            x_middle = coordinates[0][0];
-	            y_middle = coordinates[0][1];
-		            
-                ymaps.ready(init);
-                
-                var myMap;                
-
-                function init(){ 
-                    myMap = new ymaps.Map("map", {
-                        center: [x_middle	,	y_middle],
-                        zoom: 12
-                    }); 
-                    var polyline = new ymaps.Polyline(coordinates, {
-                        hintContent: "Ломаная линия"
-                    }, {
-                        draggable: false,
-                        strokeColor: "#ff0000",
-                        strokeWidth: 2,
-                    });
-                    myMap.geoObjects.add(polyline);
-                }
+	            window.onload =function() {
+	                var coordinates = '. $json_coordinates .';
+                    var x_middle = 0;
+                    var y_middle = 0;
+                    
+                    
+                    var coord_count = '.$points_count.';
+                    
+                    x_middle = coordinates[0][0];
+                    y_middle = coordinates[0][1];
+                        
+                    ymaps.ready(init);
+                    
+                    var myMap;                
+    
+                    function init(){ 
+                        myMap = new ymaps.Map("map", {
+                            center: [x_middle	,	y_middle],
+                            zoom: 12
+                        }); 
+                        var polyline = new ymaps.Polyline(coordinates, {
+                            hintContent: "Ломаная линия"
+                        }, {
+                            draggable: false,
+                            strokeColor: "#ff0000",
+                            strokeWidth: 2,
+                        });
+                        myMap.geoObjects.add(polyline);
+                    }
+                };
             </script>';
         }
     }

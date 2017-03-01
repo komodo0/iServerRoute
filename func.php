@@ -5,8 +5,9 @@ class State{
     private $connection_ip;
     private $connection_login;
     private $connection_password;
-
-    public function setConnection($db_ip, $db_login, $db_password){
+	private $connection_db;
+	
+    public function setConnection($db_ip, $db_login, $db_password, $db_name){
         $connection = new mysqli($db_ip, $db_login, $db_password);
         if ($connection->connect_errno) {
             return false;
@@ -18,6 +19,7 @@ class State{
             }
             $this->connection_login = $db_login;
             $this->connection_password = $db_password;
+			$this->connection_db = $db_name;
             return true;
         }
     }
@@ -26,6 +28,7 @@ class State{
         unset($this->connection_ip);
         unset($this->connection_login);
         unset($this->connection_password);
+		unset($this->connection_db);
     }
 
     public function isConnected(){
@@ -40,13 +43,17 @@ class State{
     public function getIp(){
         return $this->connection_ip;
     }
+	
+	public function getDbName(){
+		return $this->connection_db;
+	}
 
     public function getObjectsList(){
         try {
             $connection = new mysqli($this->connection_ip, $this->connection_login, $this->connection_password);
             $connection->set_charset("utf8");
             $objects = false;
-            $request = "SELECT id, obj FROM voyager.obj";
+            $request = "SELECT id, obj FROM " . $this->getDbName() . ".obj";
             $query = $connection->query($request);
             if ($query){
                 if ($query->num_rows >0){
@@ -138,7 +145,7 @@ class State{
         try {
             $connection = new mysqli($this->connection_ip, $this->connection_login, $this->connection_password);
             $connection->set_charset("utf8");
-            $request = "SELECT id_obj, rec_date, lat, lon, rid FROM voyager.records WHERE id_obj = ". $this->object_id ." AND rec_date BETWEEN STR_TO_DATE('". $this->begin_date ."', '%Y-%m-%d %H:%i') AND STR_TO_DATE('". $this->end_date ."', '%Y-%m-%d %H:%i') LIMIT 1000;";
+            $request = "SELECT id_obj, rec_date, lat, lon, rid FROM " . $this->getDbName() . ".records WHERE id_obj = ". $this->object_id ." AND rec_date BETWEEN STR_TO_DATE('". $this->begin_date ."', '%Y-%m-%d %H:%i') AND STR_TO_DATE('". $this->end_date ."', '%Y-%m-%d %H:%i') LIMIT 1000;";
             $query = $connection->query($request);
             if ($query){
                 if ($query->num_rows >0){
